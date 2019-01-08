@@ -1,4 +1,6 @@
-﻿namespace BookmarkMergeTool.Models
+﻿using System.Collections.Generic;
+
+namespace BookmarkMergeTool.Models
 {
 	/// <summary>
 	/// 书签信息
@@ -34,6 +36,35 @@
 		/// <param name="component"></param>
 		public override void Add(Component component)
 		{
+		}
+
+		/// <summary>
+		/// 获取输出信息
+		/// </summary>
+		/// <param name="spaceNumber">前置空格数量</param>
+		/// <returns></returns>
+		public override IEnumerable<string> GetWriteInfo(int spaceNumber)
+		{
+			if (string.IsNullOrEmpty(Icon))
+				yield return $"<DT><A HREF=\"{Href}\" ADD_DATE=\"{AddDate}\">{LabelText}</A>".AddLeftSpace(spaceNumber);
+			else
+				yield return $"<DT><A HREF=\"{Href}\" ADD_DATE=\"{AddDate}\" ICON=\"{Icon}\">{LabelText}</A>".AddLeftSpace(spaceNumber);
+		}
+	}
+
+	/// <summary>
+	/// 书签信息比较类
+	/// </summary>
+	class BookmarkEqualityComparer : IEqualityComparer<Bookmark>
+	{
+		public bool Equals(Bookmark x, Bookmark y)
+		{
+			return x.LabelName == y.LabelName && x.Href == y.Href;
+		}
+
+		public int GetHashCode(Bookmark obj)
+		{
+			return obj.LabelName.GetHashCode() ^ obj.Href.GetHashCode();
 		}
 	}
 }

@@ -10,26 +10,33 @@ namespace BookmarkMergeTool
 	/// <summary>
 	/// 书签文件读取类
 	/// </summary>
-	class BookmarkReader
+	static class BookmarkReader
 	{
 		/// <summary>
 		/// 读取谷歌书签文件
 		/// </summary>
 		/// <param name="filePath">文件路径</param>
 		/// <returns></returns>
-		public static Folder ReadFile(string filePath)
+		public static Root ReadFile(string filePath)
 		{
 			using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
 			{
-				using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8))
+				using (StreamReader streamReader = new StreamReader(fileStream, new UTF8Encoding(false)))
 				{
 					Stack<Folder> stack = new Stack<Folder>();
+					Root result = new Root();
 					Folder current = null;
 					string line;
 
 					while ((line = streamReader.ReadLine()) != null)
 					{
 						line = line.TrimStart();
+
+						if (line.StartsWith("<TITLE>"))
+						{
+							result.Title = GetLabelText(line);
+							continue;
+						}
 
 						if (line.StartsWith("<H1>"))
 						{
@@ -60,7 +67,8 @@ namespace BookmarkMergeTool
 						}
 					}
 
-					return current;
+					result.Folder = current;
+					return result;
 				}
 			}
 		}

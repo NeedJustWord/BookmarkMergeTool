@@ -42,5 +42,54 @@ namespace BookmarkMergeTool.Models
 		{
 			ComponentList.Add(component);
 		}
+
+		/// <summary>
+		/// 获取输出信息
+		/// </summary>
+		/// <param name="spaceNumber">前置空格数量</param>
+		/// <returns></returns>
+		public override IEnumerable<string> GetWriteInfo(int spaceNumber)
+		{
+			switch (LabelName)
+			{
+				case "H1":
+					yield return $"<H1>{LabelText}</H1>".AddLeftSpace(spaceNumber);
+					break;
+				case "H3":
+					if (PersonalToolbarFolder == null)
+						yield return $"<DT><H3 ADD_DATE=\"{AddDate}\" LAST_MODIFIED=\"{LastModified}\">{LabelText}</H3>".AddLeftSpace(spaceNumber);
+					else
+						yield return $"<DT><H3 ADD_DATE=\"{AddDate}\" LAST_MODIFIED=\"{LastModified}\" PERSONAL_TOOLBAR_FOLDER=\"{PersonalToolbarFolder.ToString().ToLower()}\">{LabelText}</H3>".AddLeftSpace(spaceNumber);
+					break;
+			}
+
+			yield return "<DL><p>".AddLeftSpace(spaceNumber);
+
+			foreach (var component in ComponentList)
+			{
+				foreach (var item in component.GetWriteInfo(spaceNumber + 4))
+				{
+					yield return item;
+				}
+			}
+
+			yield return "</DL><p>".AddLeftSpace(spaceNumber);
+		}
+	}
+
+	/// <summary>
+	/// 文件夹信息比较类
+	/// </summary>
+	class FolderEqualityComparer : IEqualityComparer<Folder>
+	{
+		public bool Equals(Folder x, Folder y)
+		{
+			return x.LabelName == y.LabelName && x.LabelText == y.LabelText;
+		}
+
+		public int GetHashCode(Folder obj)
+		{
+			return obj.LabelName.GetHashCode() ^ obj.LabelText.GetHashCode();
+		}
 	}
 }

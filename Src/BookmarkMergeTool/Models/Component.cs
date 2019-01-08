@@ -1,4 +1,6 @@
-﻿namespace BookmarkMergeTool.Models
+﻿using System.Collections.Generic;
+
+namespace BookmarkMergeTool.Models
 {
 	/// <summary>
 	/// 抽象类
@@ -40,5 +42,12 @@
 		/// </summary>
 		/// <param name="component"></param>
 		public abstract void Add(Component component);
+
+		/// <summary>
+		/// 获取输出信息
+		/// </summary>
+		/// <param name="spaceNumber">前置空格数量</param>
+		/// <returns></returns>
+		public abstract IEnumerable<string> GetWriteInfo(int spaceNumber);
 	}
 }
