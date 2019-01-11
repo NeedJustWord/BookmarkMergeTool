@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BookmarkMergeTool.Models
 {
 	/// <summary>
 	/// 书签信息
 	/// </summary>
-	class Bookmark : Component
+	class Bookmark : Component, IEquatable<Bookmark>
 	{
 		/// <summary>
 		/// 地址
@@ -50,6 +51,16 @@ namespace BookmarkMergeTool.Models
 			else
 				yield return $"<DT><A HREF=\"{Href}\" ADD_DATE=\"{AddDate}\" ICON=\"{Icon}\">{LabelText}</A>".AddLeftSpace(spaceNumber);
 		}
+
+		public bool Equals(Bookmark other)
+		{
+			return LabelName == other.LabelName && Href == other.Href;
+		}
+
+		public override int GetHashCode()
+		{
+			return LabelName.GetHashCode() ^ Href.GetHashCode();
+		}
 	}
 
 	/// <summary>
@@ -59,12 +70,12 @@ namespace BookmarkMergeTool.Models
 	{
 		public bool Equals(Bookmark x, Bookmark y)
 		{
-			return x.LabelName == y.LabelName && x.Href == y.Href;
+			return x.Equals(y);
 		}
 
 		public int GetHashCode(Bookmark obj)
 		{
-			return obj.LabelName.GetHashCode() ^ obj.Href.GetHashCode();
+			return obj.GetHashCode();
 		}
 	}
 }

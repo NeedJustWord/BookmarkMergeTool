@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BookmarkMergeTool.Models
 {
 	/// <summary>
 	/// 文件夹信息
 	/// </summary>
-	class Folder : Component
+	class Folder : Component, IEquatable<Folder>
 	{
 		/// <summary>
 		/// 修改时间戳
@@ -18,7 +19,7 @@ namespace BookmarkMergeTool.Models
 		/// <summary>
 		/// 子项集合
 		/// </summary>
-		public List<Component> ComponentList { get; private set; }
+		public List<Component> ComponentList { get; set; }
 
 		/// <summary>
 		/// 构造函数
@@ -75,6 +76,16 @@ namespace BookmarkMergeTool.Models
 
 			yield return "</DL><p>".AddLeftSpace(spaceNumber);
 		}
+
+		public bool Equals(Folder other)
+		{
+			return LabelName == other.LabelName && LabelText == other.LabelText;
+		}
+
+		public override int GetHashCode()
+		{
+			return LabelName.GetHashCode() ^ LabelText.GetHashCode();
+		}
 	}
 
 	/// <summary>
@@ -84,12 +95,12 @@ namespace BookmarkMergeTool.Models
 	{
 		public bool Equals(Folder x, Folder y)
 		{
-			return x.LabelName == y.LabelName && x.LabelText == y.LabelText;
+			return x.Equals(y);
 		}
 
 		public int GetHashCode(Folder obj)
 		{
-			return obj.LabelName.GetHashCode() ^ obj.LabelText.GetHashCode();
+			return obj.GetHashCode();
 		}
 	}
 }
