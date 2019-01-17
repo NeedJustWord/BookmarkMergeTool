@@ -20,6 +20,10 @@ namespace BookmarkMergeTool.Models
 		/// </summary>
 		public int AddDate { get; protected set; }
 		/// <summary>
+		/// 排序序号
+		/// </summary>
+		public int Order { get; set; }
+		/// <summary>
 		/// 操作类型
 		/// </summary>
 		public Operation Operation { get; set; } = Operation.None;

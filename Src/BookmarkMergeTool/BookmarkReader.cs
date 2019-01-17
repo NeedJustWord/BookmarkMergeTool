@@ -26,6 +26,7 @@ namespace BookmarkMergeTool
 					Stack<Folder> stack = new Stack<Folder>();
 					Root result = new Root();
 					Folder current = null;
+					int order = 0;
 					string line;
 
 					while ((line = streamReader.ReadLine()) != null)
@@ -41,6 +42,8 @@ namespace BookmarkMergeTool
 						if (line.StartsWith("<H1>"))
 						{
 							current = CreateFolder("H1", line);
+							current.Order = order;
+							order = 0;
 							continue;
 						}
 
@@ -48,18 +51,23 @@ namespace BookmarkMergeTool
 						{
 							stack.Push(current);
 							current = CreateFolder("H3", line);
+							current.Order = order;
+							order = 0;
 							continue;
 						}
 
 						if (line.StartsWith("<DT><A"))
 						{
 							var bookmark = CreateBookmark(line);
+							bookmark.Order = order;
+							order++;
 							current.Add(bookmark);
 							continue;
 						}
 
 						if (line.StartsWith("</DL><p>") && stack.Count > 0)
 						{
+							order = current.Order + 1;
 							var temp = stack.Pop();
 							temp.Add(current);
 							current = temp;
