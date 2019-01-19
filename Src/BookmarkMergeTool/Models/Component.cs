@@ -10,15 +10,15 @@ namespace BookmarkMergeTool.Models
 		/// <summary>
 		/// 标签名
 		/// </summary>
-		public string LabelName { get; protected set; }
+		public string LabelName { get; private set; }
 		/// <summary>
 		/// 标签文本
 		/// </summary>
-		public string LabelText { get; protected set; }
+		public string LabelText { get; private set; }
 		/// <summary>
 		/// 添加时间戳
 		/// </summary>
-		public int AddDate { get; protected set; }
+		public int AddDate { get; private set; }
 		/// <summary>
 		/// 排序序号
 		/// </summary>

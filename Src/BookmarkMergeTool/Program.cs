@@ -37,7 +37,7 @@ namespace BookmarkMergeTool
 		/// <param name="company"></param>
 		static void Merge(Folder based, Folder home, Folder company)
 		{
-			//查找目录
+			//查找文件夹
 			var basedFolder = based.ComponentList.OfType<Folder>();
 			var homeFolder = home.ComponentList.OfType<Folder>();
 			var companyFolder = company.ComponentList.OfType<Folder>();
@@ -47,19 +47,19 @@ namespace BookmarkMergeTool
 			var homeBookmark = home.ComponentList.OfType<Bookmark>();
 			var companyBookmark = company.ComponentList.OfType<Bookmark>();
 
-			//标记删除的目录和书签
+			//标记删除的文件夹和书签
 			basedFolder.Except(homeFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
 			basedFolder.Except(companyFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
 			basedBookmark.Except(homeBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
 			basedBookmark.Except(companyBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
 
-			//查找添加的目录和书签
+			//查找添加的文件夹和书签
 			var addHomeFolder = homeFolder.Except(basedFolder, folderEquality).ForEach(t => t.Operation = Operation.Add);
 			var addCompanyFolder = companyFolder.Except(basedFolder, folderEquality).ForEach(t => t.Operation = Operation.Add);
 			var addHomeBookmark = homeBookmark.Except(basedBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Add);
 			var addCompanyBookmark = companyBookmark.Except(basedBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Add);
 
-			//合并未删除的目录
+			//合并未删除的文件夹
 			foreach (var basedItem in basedFolder.Where(t => t.Operation == Operation.None))
 			{
 				var homeItem = homeFolder.First(t => t.Equals(basedItem));
@@ -67,11 +67,11 @@ namespace BookmarkMergeTool
 				Merge(basedItem, homeItem, companyItem);
 			}
 
-			//添加新增的目录和书签
+			//合并添加的文件夹和书签
 			MergeAdd(based.ComponentList, basedFolder, basedBookmark, home.ComponentList, addHomeFolder, addHomeBookmark);
 			MergeAdd(based.ComponentList, basedFolder, basedBookmark, company.ComponentList, addCompanyFolder, addCompanyBookmark);
 
-			//删除标记为删除的目录和书签
+			//删除标记为删除的文件夹和书签
 			based.ComponentList = based.ComponentList.Where(t => t.Operation != Operation.Delete).ToList();
 		}
 

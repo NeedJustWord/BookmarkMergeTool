@@ -11,11 +11,11 @@ namespace BookmarkMergeTool.Models
 		/// <summary>
 		/// 地址
 		/// </summary>
-		public string Href { get; set; }
+		public string Href { get; private set; }
 		/// <summary>
 		/// 图标
 		/// </summary>
-		public string Icon { get; set; }
+		public string Icon { get; private set; }
 
 		/// <summary>
 		/// 构造函数

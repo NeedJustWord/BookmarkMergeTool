@@ -6,7 +6,7 @@
 	class Root
 	{
 		/// <summary>
-		/// 书签文件标题
+		/// 标题
 		/// </summary>
 		public string Title { get; set; }
 		/// <summary>
