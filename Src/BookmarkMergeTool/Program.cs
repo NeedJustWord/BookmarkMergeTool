@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Linq;
 using BookmarkMergeTool.Models;
 
@@ -6,22 +7,22 @@ namespace BookmarkMergeTool
 {
 	class Program
 	{
-		static string basedPath = @"";
-		static string homePath = @"";
-		static string companyPath = @"";
-		static string mergePath = "";
-
 		static FolderEqualityComparer folderEquality = new FolderEqualityComparer();
 		static BookmarkEqualityComparer bookmarkEquality = new BookmarkEqualityComparer();
 
 		static void Main(string[] args)
 		{
-			var based = BookmarkReader.ReadFile(basedPath);
-			var home = BookmarkReader.ReadFile(homePath);
-			var company = BookmarkReader.ReadFile(companyPath);
+			var basedFilePath = ConfigurationManager.AppSettings["basedFilePath"];
+			var homeFilePath = ConfigurationManager.AppSettings["homeFilePath"];
+			var companyFilePath = ConfigurationManager.AppSettings["companyFilePath"];
+			var mergeFilePath = ConfigurationManager.AppSettings["mergeFilePath"];
+
+			var based = BookmarkReader.ReadFile(basedFilePath);
+			var home = BookmarkReader.ReadFile(homeFilePath);
+			var company = BookmarkReader.ReadFile(companyFilePath);
 
 			Merge(based.Folder, home.Folder, company.Folder);
-			BookmarkWriter.WriteFile(based, mergePath);
+			BookmarkWriter.WriteFile(based, mergeFilePath);
 
 			Console.WriteLine("合并完成，按任意键退出!");
 			Console.ReadKey();
