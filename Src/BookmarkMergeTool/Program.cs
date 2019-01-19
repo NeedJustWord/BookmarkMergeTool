@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using BookmarkMergeTool.Models;
@@ -67,13 +68,78 @@ namespace BookmarkMergeTool
 			}
 
 			//添加新增的目录和书签
-			based.ComponentList.AddRange(addHomeFolder);
-			based.ComponentList.AddRange(addCompanyFolder);
-			based.ComponentList.AddRange(addHomeBookmark);
-			based.ComponentList.AddRange(addCompanyBookmark);
+			MergeAdd(based.ComponentList, basedFolder, basedBookmark, home.ComponentList, addHomeFolder, addHomeBookmark);
+			MergeAdd(based.ComponentList, basedFolder, basedBookmark, company.ComponentList, addCompanyFolder, addCompanyBookmark);
 
 			//删除标记为删除的目录和书签
 			based.ComponentList = based.ComponentList.Where(t => t.Operation != Operation.Delete).ToList();
+		}
+
+		/// <summary>
+		/// 保持有序的合并添加项
+		/// </summary>
+		/// <param name="basedList">based集合</param>
+		/// <param name="basedFolders">based里的文件夹集合</param>
+		/// <param name="basedBookmarks">based里的书签集合</param>
+		/// <param name="otherList">添加项所在集合</param>
+		/// <param name="addFolders">添加的文件夹</param>
+		/// <param name="addBookmarks">添加的书签</param>
+		static void MergeAdd(List<Component> basedList, IEnumerable<Folder> basedFolders, IEnumerable<Bookmark> basedBookmarks, List<Component> otherList, IEnumerable<Folder> addFolders, IEnumerable<Bookmark> addBookmarks)
+		{
+			//合并添加项并按Order升序排序
+			var addComponents = addFolders.Select(t => (Component)t).Union(addBookmarks).OrderBy(t => t.Order).ToList();
+			if (addComponents.Count > 0)
+			{
+				//按Order的连续性进行分组
+				var group = GroupByOrder(addComponents);
+				foreach (var item in group)
+				{
+					//插入索引
+					int insertIndex = 0;
+					//获取此次插入项集合
+					var insertRange = otherList.GetRange(item.Item1, item.Item2);
+
+					if (item.Item1 != 0)
+					{
+						//在此项后面插入
+						var previous = otherList[item.Item1 - 1];
+
+						if (previous is Folder)
+						{
+							insertIndex = basedFolders.First(t => t.Equals((Folder)previous)).Order + 1;
+						}
+						else if (previous is Bookmark)
+						{
+							insertIndex = basedBookmarks.First(t => t.Equals((Bookmark)previous)).Order + 1;
+						}
+					}
+
+					basedList.InsertRange(insertIndex, insertRange);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 将<paramref name="components"/>按Order的连续性进行分组，对于每个<see cref="Tuple{T1, T2}"/>，第一项是Order，第二项是连续的个数
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="components"></param>
+		/// <returns></returns>
+		static IEnumerable<Tuple<int, int>> GroupByOrder(List<Component> components)
+		{
+			int startValue = components[0].Order;
+			int startIndex = 0;
+			int i;
+			for (i = 1; i < components.Count; i++)
+			{
+				if (startValue + i - startIndex != components[i].Order)
+				{
+					yield return new Tuple<int, int>(startValue, i - startIndex);
+					startValue = components[i].Order;
+					startIndex = i;
+				}
+			}
+			yield return new Tuple<int, int>(startValue, i - startIndex);
 		}
 	}
 }
