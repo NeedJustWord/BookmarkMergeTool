@@ -38,14 +38,14 @@ namespace BookmarkMergeTool
 		static void Merge(Folder based, Folder home, Folder company)
 		{
 			//查找文件夹
-			var basedFolder = based.ComponentList.OfType<Folder>();
-			var homeFolder = home.ComponentList.OfType<Folder>();
-			var companyFolder = company.ComponentList.OfType<Folder>();
+			var basedFolder = based.ComponentList.OfType<Folder>().ToList();
+			var homeFolder = home.ComponentList.OfType<Folder>().ToList();
+			var companyFolder = company.ComponentList.OfType<Folder>().ToList();
 
 			//查找书签
-			var basedBookmark = based.ComponentList.OfType<Bookmark>();
-			var homeBookmark = home.ComponentList.OfType<Bookmark>();
-			var companyBookmark = company.ComponentList.OfType<Bookmark>();
+			var basedBookmark = based.ComponentList.OfType<Bookmark>().ToList();
+			var homeBookmark = home.ComponentList.OfType<Bookmark>().ToList();
+			var companyBookmark = company.ComponentList.OfType<Bookmark>().ToList();
 
 			//标记删除的文件夹和书签
 			basedFolder.Except(homeFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
@@ -84,7 +84,7 @@ namespace BookmarkMergeTool
 		/// <param name="otherList">添加项所在集合</param>
 		/// <param name="addFolders">添加的文件夹</param>
 		/// <param name="addBookmarks">添加的书签</param>
-		static void MergeAdd(List<Component> basedList, IEnumerable<Folder> basedFolders, IEnumerable<Bookmark> basedBookmarks, List<Component> otherList, IEnumerable<Folder> addFolders, IEnumerable<Bookmark> addBookmarks)
+		static void MergeAdd(List<Component> basedList, List<Folder> basedFolders, List<Bookmark> basedBookmarks, List<Component> otherList, IEnumerable<Folder> addFolders, IEnumerable<Bookmark> addBookmarks)
 		{
 			//合并添加项并按Order升序排序
 			var addComponents = addFolders.Select(t => (Component)t).Union(addBookmarks).OrderBy(t => t.Order).ToList();

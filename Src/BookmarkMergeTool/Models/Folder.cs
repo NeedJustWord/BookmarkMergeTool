@@ -28,6 +28,7 @@ namespace BookmarkMergeTool.Models
 		/// <param name="labelText">标签文本</param>
 		/// <param name="addDate">添加时间戳</param>
 		/// <param name="lastModified">修改时间戳</param>
+		/// <param name="personalToolbarFolder">是否是书签栏</param>
 		public Folder(string labelName, string labelText, int addDate, int lastModified, bool? personalToolbarFolder = null) : base(labelName, labelText, addDate)
 		{
 			LastModified = lastModified;
@@ -57,8 +58,10 @@ namespace BookmarkMergeTool.Models
 					yield return $"<H1>{LabelText}</H1>".AddLeftSpace(spaceNumber);
 					break;
 				case "H3":
-					var personalToolbarFolderString = PersonalToolbarFolder == null ? "" : $" PERSONAL_TOOLBAR_FOLDER=\"{PersonalToolbarFolder.ToString().ToLower()}\"";
-					yield return $"<DT><H3 ADD_DATE=\"{AddDate}\" LAST_MODIFIED=\"{LastModified}\"{personalToolbarFolderString}>{LabelText}</H3>".AddLeftSpace(spaceNumber);
+					if (PersonalToolbarFolder == null)
+						yield return $"<DT><H3 ADD_DATE=\"{AddDate}\" LAST_MODIFIED=\"{LastModified}\">{LabelText}</H3>".AddLeftSpace(spaceNumber);
+					else
+						yield return $"<DT><H3 ADD_DATE=\"{AddDate}\" LAST_MODIFIED=\"{LastModified}\" PERSONAL_TOOLBAR_FOLDER=\"{PersonalToolbarFolder.ToString().ToLower()}\">{LabelText}</H3>".AddLeftSpace(spaceNumber);
 					break;
 			}
 
