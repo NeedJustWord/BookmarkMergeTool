@@ -90,8 +90,8 @@ namespace BookmarkMergeTool
 			var addComponents = addFolders.Select(t => (Component)t).Union(addBookmarks).OrderBy(t => t.Order).ToList();
 			if (addComponents.Count > 0)
 			{
-				//按Order的连续性进行分组
-				var group = GroupByOrder(addComponents);
+				//按Order的连续性进行分组，反转是为了foreach的时候从后往前插入，从而保证插入顺序的正确
+				var group = GroupByOrder(addComponents).Reverse();
 				foreach (var item in group)
 				{
 					//插入索引
