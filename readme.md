@@ -12,7 +12,7 @@
 
 
 
-#### v1.0.0使用方法：
+#### [v1.0.0](https://github.com/NeedJustWord/BookmarkMergeTool/blob/master/Exes/BookmarkMergeTool%20v1.0.0.rar)使用方法：
 
 1. 打开BookmarkMergeTool.exe.config文件
 2. 按注释修改value的值为对应文件的路径(相对路径或绝对路径)
