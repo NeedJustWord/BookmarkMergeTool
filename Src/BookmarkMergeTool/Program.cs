@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using BookmarkMergeTool.Models;
 
@@ -14,15 +15,19 @@ namespace BookmarkMergeTool
 		static void Main(string[] args)
 		{
 			var basedFilePath = ConfigurationManager.AppSettings["basedFilePath"];
-			var homeFilePath = ConfigurationManager.AppSettings["homeFilePath"];
-			var companyFilePath = ConfigurationManager.AppSettings["companyFilePath"];
+			var mergeDirectoryPath = ConfigurationManager.AppSettings["mergeDirectoryPath"];
 			var mergeFilePath = ConfigurationManager.AppSettings["mergeFilePath"];
+			var backupBasedFile = ConfigurationManager.AppSettings["backupBasedFile"].ToLower() == "true";
+
+			if (backupBasedFile)
+			{
+				BackupFile(basedFilePath);
+			}
 
 			var based = BookmarkReader.ReadFile(basedFilePath);
-			var home = BookmarkReader.ReadFile(homeFilePath);
-			var company = BookmarkReader.ReadFile(companyFilePath);
+			var otherFolders = Directory.GetFiles(mergeDirectoryPath).OrderBy(t => t).Select(t => BookmarkReader.ReadFile(t).Folder).ToList();
 
-			Merge(based.Folder, home.Folder, company.Folder);
+			Merge(based.Folder, otherFolders);
 			BookmarkWriter.WriteFile(based, mergeFilePath);
 
 			Console.WriteLine("合并完成，按任意键退出!");
@@ -30,46 +35,55 @@ namespace BookmarkMergeTool
 		}
 
 		/// <summary>
-		/// 将<paramref name="home"/>和<paramref name="company"/>合并到<paramref name="based"/>
+		/// 备份文件
+		/// </summary>
+		/// <param name="filePath"></param>
+		static void BackupFile(string filePath)
+		{
+			var lastWriteTime = File.GetLastWriteTime(filePath);
+			var newFilePath = filePath.Insert(filePath.LastIndexOf('.'), lastWriteTime.ToString("_yyyy_MM_dd_HH_mm_ss"));
+			File.Copy(filePath, newFilePath, true);
+		}
+
+		/// <summary>
+		/// 将<paramref name="others"/>合并到<paramref name="based"/>
 		/// </summary>
 		/// <param name="based"></param>
-		/// <param name="home"></param>
-		/// <param name="company"></param>
-		static void Merge(Folder based, Folder home, Folder company)
+		/// <param name="others"></param>
+		static void Merge(Folder based, List<Folder> others)
 		{
-			//查找文件夹
+			//查找based的文件夹和书签
 			var basedFolder = based.ComponentList.OfType<Folder>().ToList();
-			var homeFolder = home.ComponentList.OfType<Folder>().ToList();
-			var companyFolder = company.ComponentList.OfType<Folder>().ToList();
-
-			//查找书签
 			var basedBookmark = based.ComponentList.OfType<Bookmark>().ToList();
-			var homeBookmark = home.ComponentList.OfType<Bookmark>().ToList();
-			var companyBookmark = company.ComponentList.OfType<Bookmark>().ToList();
 
-			//标记删除的文件夹和书签
-			basedFolder.Except(homeFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
-			basedFolder.Except(companyFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
-			basedBookmark.Except(homeBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
-			basedBookmark.Except(companyBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
-
-			//查找添加的文件夹和书签
-			var addHomeFolder = homeFolder.Except(basedFolder, folderEquality).ForEach(t => t.Operation = Operation.Add);
-			var addCompanyFolder = companyFolder.Except(basedFolder, folderEquality).ForEach(t => t.Operation = Operation.Add);
-			var addHomeBookmark = homeBookmark.Except(basedBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Add);
-			var addCompanyBookmark = companyBookmark.Except(basedBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Add);
-
-			//合并未删除的文件夹
-			foreach (var basedItem in basedFolder.Where(t => t.Operation == Operation.None))
+			List<List<Folder>> otherFolderList = new List<List<Folder>>();
+			foreach (var other in others)
 			{
-				var homeItem = homeFolder.First(t => t.Equals(basedItem));
-				var companyItem = companyFolder.First(t => t.Equals(basedItem));
-				Merge(basedItem, homeItem, companyItem);
+				//查找other的文件夹和书签
+				var otherFolder = other.ComponentList.OfType<Folder>().ToList();
+				var otherBookmark = other.ComponentList.OfType<Bookmark>().ToList();
+
+				//other的文件夹添加到otherFolderList
+				otherFolderList.Add(otherFolder);
+
+				//标记删除的文件夹和书签
+				basedFolder.Except(otherFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
+				basedBookmark.Except(otherBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
+
+				//查找添加的文件夹和书签
+				var addFolder = otherFolder.Except(basedFolder, folderEquality).ForEach(t => t.Operation = Operation.Add);
+				var addBookmark = otherBookmark.Except(basedBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Add);
+
+				//合并添加的文件夹和书签
+				MergeAdd(based.ComponentList, basedFolder, basedBookmark, other.ComponentList, addFolder, addBookmark);
 			}
 
-			//合并添加的文件夹和书签
-			MergeAdd(based.ComponentList, basedFolder, basedBookmark, home.ComponentList, addHomeFolder, addHomeBookmark);
-			MergeAdd(based.ComponentList, basedFolder, basedBookmark, company.ComponentList, addCompanyFolder, addCompanyBookmark);
+			//合并操作类型未变过的文件夹
+			foreach (var basedItem in basedFolder.Where(t => t.Operation == Operation.None))
+			{
+				var otherItem = otherFolderList.Select(list => list.First(t => t.Equals(basedItem))).ToList();
+				Merge(basedItem, otherItem);
+			}
 
 			//删除标记为删除的文件夹和书签
 			based.ComponentList = based.ComponentList.Where(t => t.Operation != Operation.Delete).ToList();
