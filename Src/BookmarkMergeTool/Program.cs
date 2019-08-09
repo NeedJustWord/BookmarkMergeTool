@@ -82,9 +82,6 @@ namespace BookmarkMergeTool
                 var otherFolder = other.ComponentList.OfType<Folder>().ToList();
                 var otherBookmark = other.ComponentList.OfType<Bookmark>().ToList();
 
-                //other的文件夹添加到otherFolderList
-                otherFolderList.Add(otherFolder);
-
                 //标记删除的文件夹和书签
                 basedFolder.Except(otherFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
                 basedBookmark.Except(otherBookmark, bookmarkEquality).ForEach(t => t.Operation = Operation.Delete);
@@ -95,6 +92,12 @@ namespace BookmarkMergeTool
 
                 //合并添加的文件夹和书签
                 MergeAdd(based.ComponentList, basedFolder, basedBookmark, other.ComponentList, addFolder, addBookmark);
+
+                //other的文件夹添加到otherFolderList
+                otherFolderList.Add(otherFolder);
+                //根据other的书签更新based的书签
+                //todo:在合并多个文件时，书签会更新成最后那个文件的样子
+                UpdateBookmark(basedBookmark, otherBookmark);
             }
 
             //合并操作类型未变过的文件夹
@@ -173,6 +176,26 @@ namespace BookmarkMergeTool
                 }
             }
             yield return new Tuple<int, int>(startValue, i - startIndex);
+        }
+
+        /// <summary>
+        /// 根据<paramref name="otherList"/>的书签更新<paramref name="basedList"/>的书签
+        /// </summary>
+        /// <param name="basedList"></param>
+        /// <param name="otherList"></param>
+        static void UpdateBookmark(List<Bookmark> basedList, List<Bookmark> otherList)
+        {
+            //添加的书签和删除的书签不需要更新
+            var updateList = basedList.Where(t => t.Operation == Operation.None);
+
+            foreach (var item in updateList)
+            {
+                var diff = otherList.FirstOrDefault(t => t.Href == item.Href && t.Icon != item.Icon);
+                if (diff != null)
+                {
+                    item.Icon = diff.Icon;
+                }
+            }
         }
     }
 }
