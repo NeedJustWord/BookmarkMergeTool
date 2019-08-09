@@ -56,6 +56,21 @@ namespace BookmarkMergeTool
             var basedFolder = based.ComponentList.OfType<Folder>().ToList();
             var basedBookmark = based.ComponentList.OfType<Bookmark>().ToList();
 
+            //将重复的书签标记成删除项
+            var repeatingBookmark = basedBookmark.GroupBy(t => t.Href).Where(t => t.Count() > 1);
+            foreach (var item in repeatingBookmark)
+            {
+                int i = 0;
+                foreach (var bookmark in item)
+                {
+                    if (i != 0)
+                    {
+                        bookmark.Operation = Operation.Delete;
+                    }
+                    i++;
+                }
+            }
+
             List<List<Folder>> otherFolderList = new List<List<Folder>>();
             foreach (var other in others)
             {
