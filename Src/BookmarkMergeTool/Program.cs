@@ -96,7 +96,6 @@ namespace BookmarkMergeTool
                 //other的文件夹添加到otherFolderList
                 otherFolderList.Add(otherFolder);
                 //根据other的书签更新based的书签
-                //todo:在合并多个文件时，书签会更新成最后那个文件的样子
                 UpdateBookmark(basedBookmark, otherBookmark);
             }
 
@@ -190,10 +189,19 @@ namespace BookmarkMergeTool
 
             foreach (var item in updateList)
             {
-                var diff = otherList.FirstOrDefault(t => t.Href == item.Href && t.Icon != item.Icon);
-                if (diff != null)
+                var updateItem = otherList.FirstOrDefault(t => t.Href == item.Href);
+                if (updateItem != null)
                 {
-                    item.Icon = diff.Icon;
+                    //todo:在合并多个文件时，书签图标会更新成最后那个文件的样子
+                    if (updateItem.Icon != item.Icon)
+                    {
+                        item.Icon = updateItem.Icon;
+                    }
+
+                    if (updateItem.AddDate > item.AddDate)
+                    {
+                        item.AddDate = updateItem.AddDate;
+                    }
                 }
             }
         }
