@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BookmarkMergeTool.Models;
 
 namespace BookmarkMergeTool
@@ -14,7 +15,9 @@ namespace BookmarkMergeTool
 
         static void Main(string[] args)
         {
-            Console.Title = "谷歌浏览器书签合并工具";
+            var assemblyVersion = Assembly.GetEntryAssembly().GetName().Version;
+            var version = $"v{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+            Console.Title = $"谷歌浏览器书签合并工具 {version}";
 
             var basedFilePath = ConfigurationManager.AppSettings["basedFilePath"];
             var mergeDirectoryPath = ConfigurationManager.AppSettings["mergeDirectoryPath"];
