@@ -42,8 +42,9 @@ namespace BookmarkMergeTool.Models
         /// <param name="labelText">标签文本</param>
         /// <param name="addDate">添加时间戳</param>
         /// <param name="lastModified">修改时间戳</param>
+        /// <param name="prevComponent">前一个文件夹或书签</param>
         /// <param name="personalToolbarFolder">是否是书签栏</param>
-        public Folder(string labelName, string labelText, int addDate, int lastModified, bool? personalToolbarFolder = null) : base(labelName, labelText, addDate)
+        public Folder(string labelName, string labelText, int addDate, int lastModified, Component prevComponent, bool? personalToolbarFolder) : base(labelName, labelText, addDate, prevComponent)
         {
             this.lastModified = lastModified;
             PersonalToolbarFolder = personalToolbarFolder;
@@ -94,7 +95,7 @@ namespace BookmarkMergeTool.Models
 
         public bool Equals(Folder other)
         {
-            return LabelName == other.LabelName && LabelText == other.LabelText;
+            return other != null && LabelName == other.LabelName && LabelText == other.LabelText;
         }
 
         public override int GetHashCode()

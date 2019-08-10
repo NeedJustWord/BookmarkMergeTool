@@ -25,7 +25,8 @@ namespace BookmarkMergeTool.Models
         /// <param name="href">地址</param>
         /// <param name="addDate">添加时间戳</param>
         /// <param name="icon">图标</param>
-        public Bookmark(string labelName, string labelText, string href, int addDate, string icon) : base(labelName, labelText, addDate)
+        /// <param name="prevComponent">前一个文件夹或书签</param>
+        public Bookmark(string labelName, string labelText, string href, int addDate, string icon, Component prevComponent) : base(labelName, labelText, addDate, prevComponent)
         {
             Href = href;
             Icon = icon;
@@ -54,7 +55,7 @@ namespace BookmarkMergeTool.Models
 
         public bool Equals(Bookmark other)
         {
-            return LabelName == other.LabelName && Href == other.Href;
+            return other != null && LabelName == other.LabelName && Href == other.Href;
         }
 
         public override int GetHashCode()
