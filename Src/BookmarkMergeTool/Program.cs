@@ -14,6 +14,8 @@ namespace BookmarkMergeTool
 
         static void Main(string[] args)
         {
+            Console.Title = "谷歌浏览器书签合并工具";
+
             var basedFilePath = ConfigurationManager.AppSettings["basedFilePath"];
             var mergeDirectoryPath = ConfigurationManager.AppSettings["mergeDirectoryPath"];
             var mergeFilePath = ConfigurationManager.AppSettings["mergeFilePath"];
@@ -88,6 +90,9 @@ namespace BookmarkMergeTool
                 otherFolderList.Add(otherFolder);
                 //根据other的书签更新based的书签
                 UpdateBookmark(basedBookmark, otherBookmark);
+
+                //确保based集合的顺序和other集合的一致
+                MakeSameOrder(based.ComponentList, other.ComponentList);
             }
 
             //合并操作类型未变过的文件夹
@@ -217,6 +222,54 @@ namespace BookmarkMergeTool
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 确保<paramref name="based"/>的顺序和<paramref name="other"/>一致
+        /// </summary>
+        /// <param name="based"></param>
+        /// <param name="other"></param>
+        static void MakeSameOrder(List<Component> based, List<Component> other)
+        {
+            //排除删除项
+            foreach (var otherComponent in other.Where(t => t.Operation != Operation.Delete))
+            {
+                //查找与otherComponent相等的未删除项
+                Component basedComponent = based.FirstOrDefault(t => t.Operation != Operation.Delete && t.Equals(otherComponent));
+                if (basedComponent != null)
+                {
+                    if (IsComponentEquals(basedComponent.PrevComponent, otherComponent.PrevComponent) == false)
+                    {
+                        //basedComponent和otherComponent的PrevComponent不同，则要调整顺序
+
+                        //如果otherComponent.PrevComponent为null，则basedComponent在首位
+                        //否则，basedComponent的位置在otherComponent.PrevComponent在based里的位置的后面
+                        var newIndex = otherComponent.PrevComponent == null ? 0 : based.FindIndex(t => t.Equals(otherComponent.PrevComponent)) + 1;
+
+                        based.Remove(basedComponent);
+                        if (newIndex > based.Count)
+                        {
+                            newIndex = based.Count;
+                        }
+                        based.Insert(newIndex, basedComponent);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 判断<paramref name="based"/>和<paramref name="other"/>是否相等
+        /// </summary>
+        /// <param name="based"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        static bool IsComponentEquals(Component based, Component other)
+        {
+            if (based != null)
+            {
+                return based.Equals(other);
+            }
+            return other == null;
         }
     }
 }
