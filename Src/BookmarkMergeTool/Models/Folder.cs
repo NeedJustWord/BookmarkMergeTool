@@ -11,7 +11,21 @@ namespace BookmarkMergeTool.Models
         /// <summary>
         /// 修改时间戳
         /// </summary>
-        public int LastModified { get; set; }
+        public int LastModified
+        {
+            get
+            {
+                return lastModified;
+            }
+            set
+            {
+                if (value > lastModified)
+                {
+                    lastModified = value;
+                }
+            }
+        }
+        private int lastModified;
         /// <summary>
         /// 
         /// </summary>
@@ -31,7 +45,7 @@ namespace BookmarkMergeTool.Models
         /// <param name="personalToolbarFolder">是否是书签栏</param>
         public Folder(string labelName, string labelText, int addDate, int lastModified, bool? personalToolbarFolder = null) : base(labelName, labelText, addDate)
         {
-            LastModified = lastModified;
+            this.lastModified = lastModified;
             PersonalToolbarFolder = personalToolbarFolder;
             ComponentList = new List<Component>();
         }

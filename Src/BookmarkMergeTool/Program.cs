@@ -57,30 +57,21 @@ namespace BookmarkMergeTool
             var basedBookmark = based.ComponentList.OfType<Bookmark>().ToList();
 
             //将重复的书签标记成删除项
-            var repeatingBookmark = basedBookmark.GroupBy(t => t.Href).Where(t => t.Count() > 1);
-            foreach (var item in repeatingBookmark)
-            {
-                int i = 0;
-                foreach (var bookmark in item)
-                {
-                    if (i != 0)
-                    {
-                        bookmark.Operation = Operation.Delete;
-                    }
-                    i++;
-                }
-            }
+            DistinctBookmark(basedBookmark);
 
             List<List<Folder>> otherFolderList = new List<List<Folder>>();
             foreach (var other in others)
             {
                 //将based的添加时间戳和修改时间戳更新到最新值
-                if (other.AddDate > based.AddDate) based.AddDate = other.AddDate;
-                if (other.LastModified > based.LastModified) based.LastModified = other.LastModified;
+                based.AddDate = other.AddDate;
+                based.LastModified = other.LastModified;
 
                 //查找other的文件夹和书签
                 var otherFolder = other.ComponentList.OfType<Folder>().ToList();
                 var otherBookmark = other.ComponentList.OfType<Bookmark>().ToList();
+
+                //将重复的书签标记成删除项
+                DistinctBookmark(otherBookmark);
 
                 //标记删除的文件夹和书签
                 basedFolder.Except(otherFolder, folderEquality).ForEach(t => t.Operation = Operation.Delete);
@@ -108,6 +99,31 @@ namespace BookmarkMergeTool
 
             //删除标记为删除的文件夹和书签
             based.ComponentList = based.ComponentList.Where(t => t.Operation != Operation.Delete).ToList();
+        }
+
+        /// <summary>
+        /// 将重复的书签标记成删除项
+        /// </summary>
+        /// <param name="BookmarkList"></param>
+        static void DistinctBookmark(List<Bookmark> BookmarkList)
+        {
+            //将重复的书签标记成删除项
+            var repeatingBookmark = BookmarkList.GroupBy(t => t.Href).Where(t => t.Count() > 1);
+            foreach (var item in repeatingBookmark)
+            {
+                bool isFirst = true;
+                foreach (var bookmark in item)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        bookmark.Operation = Operation.Delete;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -192,15 +208,12 @@ namespace BookmarkMergeTool
                 var updateItem = otherList.FirstOrDefault(t => t.Href == item.Href);
                 if (updateItem != null)
                 {
+                    item.AddDate = updateItem.AddDate;
+
                     //todo:在合并多个文件时，书签图标会更新成最后那个文件的样子
                     if (updateItem.Icon != item.Icon)
                     {
                         item.Icon = updateItem.Icon;
-                    }
-
-                    if (updateItem.AddDate > item.AddDate)
-                    {
-                        item.AddDate = updateItem.AddDate;
                     }
                 }
             }

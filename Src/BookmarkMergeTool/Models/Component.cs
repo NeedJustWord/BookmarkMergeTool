@@ -18,7 +18,21 @@ namespace BookmarkMergeTool.Models
         /// <summary>
         /// 添加时间戳
         /// </summary>
-        public int AddDate { get; set; }
+        public int AddDate
+        {
+            get
+            {
+                return addDate;
+            }
+            set
+            {
+                if (value > addDate)
+                {
+                    addDate = value;
+                }
+            }
+        }
+        private int addDate;
         /// <summary>
         /// 排序序号
         /// </summary>
@@ -38,7 +52,7 @@ namespace BookmarkMergeTool.Models
         {
             LabelName = labelName;
             LabelText = labelText;
-            AddDate = addDate;
+            this.addDate = addDate;
         }
 
         /// <summary>
