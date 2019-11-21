@@ -24,18 +24,35 @@ namespace BookmarkMergeTool
             var mergeFilePath = ConfigurationManager.AppSettings["mergeFilePath"];
             var backupBasedFile = ConfigurationManager.AppSettings["backupBasedFile"].ToLower() == "true";
 
+            if (File.Exists(basedFilePath) == false)
+            {
+                WriteMessageAndReadKey("基准书签文件不存在，按任意键退出!");
+                return;
+            }
+
+            if (Directory.Exists(mergeDirectoryPath) == false)
+            {
+                WriteMessageAndReadKey("合并书签所在目录不存在，按任意键退出!");
+                return;
+            }
+
             if (backupBasedFile)
             {
                 BackupFile(basedFilePath);
             }
 
             var based = BookmarkReader.ReadFile(basedFilePath);
-            var otherFolders = Directory.GetFiles(mergeDirectoryPath).OrderBy(t => t).Select(t => BookmarkReader.ReadFile(t).Folder).ToList();
+            var otherFolders = Directory.GetFiles(mergeDirectoryPath, "*.html").OrderBy(t => t).Select(t => BookmarkReader.ReadFile(t).Folder).ToList();
 
             Merge(based.Folder, otherFolders);
             BookmarkWriter.WriteFile(based, mergeFilePath);
 
-            Console.WriteLine("合并完成，按任意键退出!");
+            WriteMessageAndReadKey("合并完成，按任意键退出!");
+        }
+
+        static void WriteMessageAndReadKey(string message)
+        {
+            Console.WriteLine(message);
             Console.ReadKey();
         }
 
