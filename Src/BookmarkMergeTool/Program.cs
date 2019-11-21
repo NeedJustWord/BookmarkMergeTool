@@ -95,6 +95,7 @@ namespace BookmarkMergeTool
                 UpdateBookmark(basedBookmark, otherBookmark);
 
                 //确保based集合的顺序和other集合的一致
+                //todo:在合并多个文件时，顺序和最后那个文件的顺序一致
                 MakeSameOrder(based.ComponentList, other.ComponentList);
             }
 
@@ -105,6 +106,9 @@ namespace BookmarkMergeTool
                 Merge(basedItem, otherItem);
             }
 
+            //将重复的书签标记成删除项，这里是为了防止others里分别添加了同一书签
+            DistinctBookmark(based.ComponentList.OfType<Bookmark>().Where(t => t.Operation != Operation.Delete));
+
             //删除标记为删除的文件夹和书签
             based.ComponentList = based.ComponentList.Where(t => t.Operation != Operation.Delete).ToList();
         }
@@ -112,11 +116,10 @@ namespace BookmarkMergeTool
         /// <summary>
         /// 将重复的书签标记成删除项
         /// </summary>
-        /// <param name="BookmarkList"></param>
-        static void DistinctBookmark(List<Bookmark> BookmarkList)
+        /// <param name="bookmarks"></param>
+        static void DistinctBookmark(IEnumerable<Bookmark> bookmarks)
         {
-            //将重复的书签标记成删除项
-            var repeatingBookmark = BookmarkList.GroupBy(t => t.Href).Where(t => t.Count() > 1);
+            var repeatingBookmark = bookmarks.GroupBy(t => t.Href).Where(t => t.Count() > 1);
             foreach (var item in repeatingBookmark)
             {
                 bool isFirst = true;
@@ -210,19 +213,13 @@ namespace BookmarkMergeTool
         {
             //添加的书签和删除的书签不需要更新
             var updateList = basedList.Where(t => t.Operation == Operation.None);
-
             foreach (var item in updateList)
             {
                 var updateItem = otherList.FirstOrDefault(t => t.Href == item.Href);
                 if (updateItem != null)
                 {
                     item.AddDate = updateItem.AddDate;
-
-                    //todo:在合并多个文件时，书签图标会更新成最后那个文件的样子
-                    if (updateItem.Icon != item.Icon)
-                    {
-                        item.Icon = updateItem.Icon;
-                    }
+                    item.Icon = updateItem.Icon;
                 }
             }
         }
@@ -234,8 +231,7 @@ namespace BookmarkMergeTool
         /// <param name="other"></param>
         static void MakeSameOrder(List<Component> based, List<Component> other)
         {
-            //排除删除项
-            foreach (var otherComponent in other.Where(t => t.Operation != Operation.Delete))
+            foreach (var otherComponent in other)
             {
                 //查找与otherComponent相等的未删除项
                 Component basedComponent = based.FirstOrDefault(t => t.Operation != Operation.Delete && t.Equals(otherComponent));

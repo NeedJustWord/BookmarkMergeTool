@@ -29,7 +29,7 @@ namespace BookmarkMergeTool.Models
         /// <summary>
         /// 
         /// </summary>
-        public bool? PersonalToolbarFolder { get; private set; }
+        public bool? PersonalToolbarFolder { get; }
         /// <summary>
         /// 子项集合
         /// </summary>

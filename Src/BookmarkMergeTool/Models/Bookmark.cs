@@ -11,11 +11,26 @@ namespace BookmarkMergeTool.Models
         /// <summary>
         /// 地址
         /// </summary>
-        public string Href { get; private set; }
+        public string Href { get; }
         /// <summary>
         /// 图标
         /// </summary>
-        public string Icon { get; set; }
+        public string Icon
+        {
+            get
+            {
+                return icon;
+            }
+            set
+            {
+                if (value != initIcon)
+                {
+                    icon = value;
+                }
+            }
+        }
+        private string icon;
+        private readonly string initIcon;
 
         /// <summary>
         /// 构造函数
@@ -29,7 +44,8 @@ namespace BookmarkMergeTool.Models
         public Bookmark(string labelName, string labelText, string href, int addDate, string icon, Component prevComponent) : base(labelName, labelText, addDate, prevComponent)
         {
             Href = href;
-            Icon = icon;
+            initIcon = icon;
+            this.icon = icon;
         }
 
         /// <summary>

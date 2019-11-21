@@ -11,15 +11,15 @@ namespace BookmarkMergeTool.Models
         /// <summary>
         /// 前一个文件夹或书签
         /// </summary>
-        public Component PrevComponent { get; private set; }
+        public Component PrevComponent { get; }
         /// <summary>
         /// 标签名
         /// </summary>
-        public string LabelName { get; private set; }
+        public string LabelName { get; }
         /// <summary>
         /// 标签文本
         /// </summary>
-        public string LabelText { get; private set; }
+        public string LabelText { get; }
         /// <summary>
         /// 添加时间戳
         /// </summary>
